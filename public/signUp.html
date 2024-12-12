@@ -57,19 +57,20 @@
             </div>
         </div>
     </footer>
+    <script src="/scripts/main.js"></script>
     <script>
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        document.getElementById('signupFormElement').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
 
             try {
-                const response = await fetch('/signup', {
+                const response = await fetch('/api/signup', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(data)
                 });
                 const result = await response.json();
                 const notification = document.getElementById('notification');

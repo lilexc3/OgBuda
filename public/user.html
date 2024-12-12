@@ -54,60 +54,46 @@
             </div>
         </div>
     </footer>
+    <script src="/scripts/main.js"></script>
     <script>
-    let authCheckInProgress = false;
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
 
-    async function checkAuthStatus() {
-        if (authCheckInProgress) return;
-        authCheckInProgress = true;
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                const notification = document.getElementById('notification');
+                notification.textContent = result.message;
+                notification.className = 'notification ' + (response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    localStorage.setItem('token', result.token);
+                    setTimeout(() => {
+                        window.location.href = '/profile.html';
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const notification = document.getElementById('notification');
+                notification.textContent = 'An error occurred';
+                notification.className = 'notification error';
+            }
+        });
 
-        try {
-            const response = await fetch('/api/auth-status');
-            const data = await response.json();
-            if (data.isAuthenticated) {
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (await checkAuthStatus()) {
                 window.location.href = '/profile.html';
             }
-        } catch (error) {
-            console.error('Error checking auth status:', error);
-        } finally {
-            authCheckInProgress = false;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', checkAuthStatus);
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData);
-
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-                credentials: 'include'
-            });
-            const result = await response.json();
-            const notification = document.getElementById('notification');
-            notification.textContent = result.message;
-            notification.className = 'notification ' + (response.ok ? 'success' : 'error');
-            
-            if (response.ok) {
-                setTimeout(() => {
-                    window.location.href = result.redirect;
-                }, 2000);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            const notification = document.getElementById('notification');
-            notification.textContent = 'An error occurred';
-            notification.className = 'notification error';
-        }
-    });
-</script>
+        });
+    </script>
 </body>
 </html>
 

@@ -141,35 +141,29 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="/scripts/main.js"></script>
     <script>
-        async function checkAuthStatus() {
-            try {
-                const response = await fetch('/api/auth-status');
-                const data = await response.json();
-                if (data.isAuthenticated) {
-                    const usernameResponse = await fetch('/api/username', { credentials: 'include' });
-                    const usernameData = await usernameResponse.json();
-                    document.getElementById('authLink').innerHTML = `
-                        <a href="profile.html">
-                            ${usernameData.nickname}
-                        </a>
-                    `;
-                    document.getElementById('reserveLink').href = 'reservation.html';
-                    document.getElementById('reserveButton').onclick = () => {
-                        window.location.href = 'reservation.html';
-                    };
-                } else {
-                    document.getElementById('reserveLink').href = 'user.html';
-                    document.getElementById('reserveButton').onclick = () => {
-                        window.location.href = 'user.html';
-                    };
+        async function updateNavigation() {
+            const isAuthenticated = await checkAuthStatus();
+            const authLink = document.getElementById('authLink');
+            const reserveLink = document.getElementById('reserveLink');
+            const reserveButton = document.getElementById('reserveButton');
+
+            if (isAuthenticated) {
+                const userInfo = await fetchUserInfo();
+                if (userInfo && userInfo.user) {
+                    authLink.innerHTML = `<a href="/profile.html">${userInfo.user.nickname}</a>`;
+                    reserveLink.href = '/reservation.html';
+                    reserveButton.onclick = () => { window.location.href = '/reservation.html'; };
                 }
-            } catch (error) {
-                console.error('Error checking auth status:', error);
+            } else {
+                authLink.innerHTML = '<a href="/user.html">Login</a>';
+                reserveLink.href = '/user.html';
+                reserveButton.onclick = () => { window.location.href = '/user.html'; };
             }
         }
 
-        document.addEventListener('DOMContentLoaded', checkAuthStatus);
+        document.addEventListener('DOMContentLoaded', updateNavigation);
     </script>
 </body>
 </html>
