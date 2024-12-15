@@ -58,27 +58,32 @@
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const { ok, result } = await handleFormSubmit('/.netlify/functions/api/login', formData);
-            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
             const notification = document.getElementById('notification');
-            notification.textContent = result.message;
-            notification.className = 'notification ' + (ok ? 'success' : 'error');
-            
-            if (ok) {
-                localStorage.setItem('token', result.token);
-                setTimeout(() => {
-                    window.location.href = '/profile.html';
-                }, 2000);
+        
+            try {
+                const result = await login(email, password);
+                if (result.success) {
+                    showNotification(notification, 'Login successful', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/profile.html';
+                    }, 1000);
+                } else {
+                    showNotification(notification, result.error || 'Invalid credentials');
+                }
+            } catch (error) {
+                showNotification(notification, 'An error occurred during login');
             }
         });
-
+        
+        // Check auth status on page load
         document.addEventListener('DOMContentLoaded', async () => {
             if (await checkAuthStatus()) {
                 window.location.href = '/profile.html';
             }
         });
-    </script>
+        </script>
 </body>
 </html>
 

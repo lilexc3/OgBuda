@@ -94,40 +94,34 @@
                 window.location.href = '/user.html';
             }
         });
-
+        
         document.getElementById('reservationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const token = localStorage.getItem('token');
-
+            const formData = {
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                pcType: document.getElementById('pcType').value
+            };
+            const notification = document.getElementById('notification');
+        
             try {
-                const response = await fetch('/.netlify/functions/api/reserve', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(Object.fromEntries(formData))
-                });
-                const result = await response.json();
-                const notification = document.getElementById('notification');
-                notification.textContent = result.message;
-                notification.className = 'notification ' + (response.ok ? 'success' : 'error');
-                
-                if (response.status === 401) {
-                    localStorage.removeItem('token');
+                const result = await makeReservation(formData);
+                showNotification(notification, 'Reservation successful!', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } catch (error) {
+                if (error.message === 'Not authenticated') {
+                    showNotification(notification, 'Please log in to make a reservation');
                     setTimeout(() => {
                         window.location.href = '/user.html';
-                    }, 2000);
+                    }, 1000);
+                } else {
+                    showNotification(notification, error.message || 'Failed to make reservation');
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                const notification = document.getElementById('notification');
-                notification.textContent = 'An error occurred';
-                notification.className = 'notification error';
             }
         });
-    </script>
+        </script>
 </body>
 </html>
 

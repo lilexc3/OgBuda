@@ -61,20 +61,30 @@
     <script>
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const { ok, result } = await handleFormSubmit('/.netlify/functions/api/signup', formData);
-
+            const formData = {
+                nickname: document.getElementById('nickname').value,
+                password: document.getElementById('password').value,
+                email: document.getElementById('email').value,
+                date: document.getElementById('date').value
+            };
             const notification = document.getElementById('notification');
-            notification.textContent = result.message;
-            notification.className = 'notification ' + (ok ? 'success' : 'error');
-
-            if (ok) {
-                setTimeout(() => {
-                    window.location.href = '/user.html';
-                }, 2000);
+        
+            try {
+                const result = await signup(formData);
+                if (result.success) {
+                    showNotification(notification, 'Registration successful! Redirecting to login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/user.html';
+                    }, 1000);
+                } else {
+                    showNotification(notification, result.error || 'Registration failed');
+                }
+            } catch (error) {
+                showNotification(notification, 'An error occurred during registration');
             }
         });
-    </script>
+        </script>
+        
 </body>
 </html>
 
