@@ -55,48 +55,48 @@
         </div>
     </footer>
     <script src="/scripts/main.js"></script>
-    <script>
-        async function displayUserInfo(user) {
-            const userInfoDiv = document.getElementById('userInfo');
-            userInfoDiv.innerHTML = `
-                <p>Nickname: ${user.nickname}</p>
-                <p>Email: ${user.email}</p>
-                <p>Registration Date: ${new Date(user.date).toLocaleDateString()}</p>
-            `;
+<script>
+    async function displayUserInfo(user) {
+        const userInfoDiv = document.getElementById('userInfo');
+        userInfoDiv.innerHTML = `
+            <p>Nickname: ${user.nickname}</p>
+            <p>Email: ${user.email}</p>
+            <p>Registration Date: ${new Date(user.date).toLocaleDateString()}</p>
+        `;
+    }
+
+    function displayReservationHistory(reservations) {
+        const reservationHistoryDiv = document.getElementById('reservationHistory');
+        if (reservations.length === 0) {
+            reservationHistoryDiv.innerHTML = '<p>No reservations yet.</p>';
+        } else {
+            reservationHistoryDiv.innerHTML = reservations.map(reservation => `
+                <div>
+                    <p>Date: ${reservation.date}</p>
+                    <p>Time: ${reservation.time}</p>
+                    <p>PC Type: ${reservation.pcType}</p>
+                </div>
+            `).join('');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (!(await checkAuthStatus())) {
+            window.location.href = '/user.html';
+            return;
         }
 
-        function displayReservationHistory(reservations) {
-            const reservationHistoryDiv = document.getElementById('reservationHistory');
-            if (reservations.length === 0) {
-                reservationHistoryDiv.innerHTML = '<p>No reservations yet.</p>';
-            } else {
-                reservationHistoryDiv.innerHTML = reservations.map(reservation => `
-                    <div>
-                        <p>Date: ${reservation.date}</p>
-                        <p>Time: ${reservation.time}</p>
-                        <p>PC Type: ${reservation.pcType}</p>
-                    </div>
-                `).join('');
-            }
+        const userInfo = await fetchUserInfo();
+        if (userInfo) {
+            displayUserInfo(userInfo.user);
+            displayReservationHistory(userInfo.reservations);
+        } else {
+            document.getElementById('userInfo').innerHTML = '<p>Failed to load user information. Please try refreshing the page.</p>';
         }
+    });
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (!(await checkAuthStatus())) {
-                window.location.href = '/user.html';
-                return;
-            }
-
-            const userInfo = await fetchUserInfo();
-            if (userInfo) {
-                displayUserInfo(userInfo.user);
-                displayReservationHistory(userInfo.reservations);
-            } else {
-                document.getElementById('profile').innerHTML = '<p>Failed to load user information. Please try refreshing the page.</p>';
-            }
-        });
-
-        document.getElementById('logoutButton').addEventListener('click', logout);
-    </script>
+    document.getElementById('logoutButton').addEventListener('click', logout);
+</script>
 </body>
 </html>
 

@@ -95,20 +95,19 @@
             }
         });
 
-        document.getElementById('reservationFormElement').addEventListener('submit', async (e) => {
+        document.getElementById('reservationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
             const token = localStorage.getItem('token');
 
             try {
-                const response = await fetch('/api/reserve', {
+                const response = await fetch('/.netlify/functions/api/reserve', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(Object.fromEntries(formData))
                 });
                 const result = await response.json();
                 const notification = document.getElementById('notification');

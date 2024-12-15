@@ -2,7 +2,7 @@ async function checkAuthStatus() {
     const token = localStorage.getItem('token');
     if (token) {
         try {
-            const response = await fetch('/api/auth-status', {
+            const response = await fetch('/.netlify/functions/api/auth-status', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -20,7 +20,7 @@ async function checkAuthStatus() {
 async function fetchUserInfo() {
     const token = localStorage.getItem('token');
     try {
-        const response = await fetch('/api/user-info', {
+        const response = await fetch('/.netlify/functions/api/user-info', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -40,3 +40,22 @@ function logout() {
     localStorage.removeItem('token');
     window.location.href = '/user.html';
 }
+
+// Add this function to handle form submissions
+async function handleFormSubmit(url, formData) {
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(Object.fromEntries(formData))
+        });
+        const result = await response.json();
+        return { ok: response.ok, result };
+    } catch (error) {
+        console.error('Error:', error);
+        return { ok: false, result: { message: 'An error occurred' } };
+    }
+}
+
