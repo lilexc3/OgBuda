@@ -22,7 +22,7 @@ const login = async (event) => {
     const token = jwt.sign({ userId: user._id.toString() }, JWT_SECRET, { expiresIn: '1h' });
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Login successful', token }),
+      body: JSON.stringify({ message: 'Login successful', token, redirect: '/profile' }),
     };
   } else {
     return { statusCode: 401, body: JSON.stringify({ message: 'Invalid credentials' }) };
@@ -81,6 +81,25 @@ const userInfo = async (event) => {
   };
 };
 
+const getUsername = async (event) => {
+  const authResult = await authenticateToken(event);
+  if (authResult.statusCode !== 200) {
+    return authResult;
+  }
+
+  const db = await connectToDatabase();
+
+  const user = await db.collection('users').findOne({ _id: new ObjectId(authResult.userId) });
+  if (!user) {
+    return { statusCode: 404, body: JSON.stringify({ message: 'User not found' }) };
+  }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ nickname: user.nickname })
+  };
+};
+
 export const handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -101,6 +120,9 @@ export const handler = async (event, context) => {
       case 'user-info':
         if (event.httpMethod !== 'GET') return { statusCode: 405, body: 'Method Not Allowed' };
         return await userInfo(event);
+      case 'username':
+        if (event.httpMethod !== 'GET') return { statusCode: 405, body: 'Method Not Allowed' };
+        return await getUsername(event);
       case 'auth-status':
         if (event.httpMethod !== 'GET') return { statusCode: 405, body: 'Method Not Allowed' };
         return await authenticateToken(event);
@@ -118,3 +140,4 @@ export const handler = async (event, context) => {
     };
   }
 };
+

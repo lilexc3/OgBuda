@@ -15,3 +15,4 @@ export const authenticateToken = async (event) => {
     return { statusCode: 401, body: JSON.stringify({ message: 'Invalid token' }) };
   }
 };
+
