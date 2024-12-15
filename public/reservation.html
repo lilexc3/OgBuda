@@ -44,7 +44,7 @@
                     <label for="time">Time:</label>
                     <input type="time" id="time" name="time" required>
                     <label for="pcType">Type of PC:</label>
-                    <input type="text" list="type-of-pc" id="pcType" name="pcType">
+                    <input type="text" list="type-of-pc" id="pcType" name="pcType" required>
                     <datalist id="type-of-pc">
                         <option value="Vip">
                         <option value="Bootcamp">
@@ -94,7 +94,7 @@
                 window.location.href = '/user.html';
             }
         });
-        
+
         document.getElementById('reservationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = {
@@ -103,25 +103,46 @@
                 pcType: document.getElementById('pcType').value
             };
             const notification = document.getElementById('notification');
-        
+            const submitButton = e.target.querySelector('button[type="submit"]');
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Reserving...';
+
             try {
-                const result = await makeReservation(formData);
-                showNotification(notification, 'Reservation successful!', 'success');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } catch (error) {
-                if (error.message === 'Not authenticated') {
-                    showNotification(notification, 'Please log in to make a reservation');
+                const response = await fetch('/.netlify/functions/api/reserve', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showNotification(notification, 'Reservation successful!', 'success');
                     setTimeout(() => {
-                        window.location.href = '/user.html';
+                        window.location.reload();
                     }, 1000);
                 } else {
-                    showNotification(notification, error.message || 'Failed to make reservation');
+                    const errorData = await response.json();
+                    showNotification(notification, errorData.message || 'Failed to make reservation');
                 }
+            } catch (error) {
+                console.error('Reservation error:', error);
+                showNotification(notification, 'An error occurred while making the reservation');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Reserve';
             }
         });
-        </script>
+
+        function showNotification(element, message, type = 'error') {
+            element.textContent = message;
+            element.className = `notification ${type}`;
+            element.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
 

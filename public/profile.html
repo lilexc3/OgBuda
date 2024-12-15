@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="styles/common.css">
     <link rel="icon" href="images/web-icon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
@@ -55,48 +56,64 @@
         </div>
     </footer>
     <script src="/scripts/main.js"></script>
-<script>
-    async function displayUserInfo(user) {
-        const userInfoDiv = document.getElementById('userInfo');
-        userInfoDiv.innerHTML = `
-            <p>Nickname: ${user.nickname}</p>
-            <p>Email: ${user.email}</p>
-            <p>Registration Date: ${new Date(user.date).toLocaleDateString()}</p>
-        `;
-    }
-
-    function displayReservationHistory(reservations) {
-        const reservationHistoryDiv = document.getElementById('reservationHistory');
-        if (reservations.length === 0) {
-            reservationHistoryDiv.innerHTML = '<p>No reservations yet.</p>';
-        } else {
-            reservationHistoryDiv.innerHTML = reservations.map(reservation => `
-                <div>
-                    <p>Date: ${reservation.date}</p>
-                    <p>Time: ${reservation.time}</p>
-                    <p>PC Type: ${reservation.pcType}</p>
-                </div>
-            `).join('');
+    <script>
+        async function displayUserInfo(user) {
+            const userInfoDiv = document.getElementById('userInfo');
+            userInfoDiv.innerHTML = `
+                <p>Nickname: ${user.nickname}</p>
+                <p>Email: ${user.email}</p>
+                <p>Registration Date: ${new Date(user.date).toLocaleDateString()}</p>
+            `;
         }
-    }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        if (!(await checkAuthStatus())) {
+        function displayReservationHistory(reservations) {
+            const reservationHistoryDiv = document.getElementById('reservationHistory');
+            if (reservations.length === 0) {
+                reservationHistoryDiv.innerHTML = '<p>No reservations yet.</p>';
+            } else {
+                reservationHistoryDiv.innerHTML = reservations.map(reservation => `
+                    <div>
+                        <p>Date: ${reservation.date}</p>
+                        <p>Time: ${reservation.time}</p>
+                        <p>PC Type: ${reservation.pcType}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!(await checkAuthStatus())) {
+                window.location.href = '/user.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/.netlify/functions/api/user-info', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userInfo = await response.json();
+                    displayUserInfo(userInfo.user);
+                    displayReservationHistory(userInfo.reservations);
+                } else {
+                    const errorData = await response.json();
+                    console.error('Failed to fetch user info:', errorData.message);
+                    document.getElementById('userInfo').innerHTML = '<p>Failed to load user information. Please try refreshing the page.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+                document.getElementById('userInfo').innerHTML = '<p>An error occurred while loading user information. Please try again later.</p>';
+            }
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            localStorage.removeItem('token');
             window.location.href = '/user.html';
-            return;
-        }
-
-        const userInfo = await fetchUserInfo();
-        if (userInfo) {
-            displayUserInfo(userInfo.user);
-            displayReservationHistory(userInfo.reservations);
-        } else {
-            document.getElementById('userInfo').innerHTML = '<p>Failed to load user information. Please try refreshing the page.</p>';
-        }
-    });
-
-    document.getElementById('logoutButton').addEventListener('click', logout);
-</script>
+        });
+    </script>
 </body>
 </html>
 

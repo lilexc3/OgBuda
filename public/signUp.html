@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link rel="stylesheet" href="signUp.css">
+    <link rel="stylesheet" href="styles/common.css">
     <link rel="icon" href="images/web-icon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
@@ -68,23 +69,45 @@
                 date: document.getElementById('date').value
             };
             const notification = document.getElementById('notification');
-        
+            const submitButton = e.target.querySelector('button[type="submit"]');
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Signing up...';
+
             try {
-                const result = await signup(formData);
-                if (result.success) {
+                const response = await fetch('/.netlify/functions/api/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
                     showNotification(notification, 'Registration successful! Redirecting to login...', 'success');
                     setTimeout(() => {
                         window.location.href = '/user.html';
                     }, 1000);
                 } else {
-                    showNotification(notification, result.error || 'Registration failed');
+                    const errorData = await response.json();
+                    showNotification(notification, errorData.message || 'Registration failed');
                 }
             } catch (error) {
+                console.error('Signup error:', error);
                 showNotification(notification, 'An error occurred during registration');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Sign Up';
             }
         });
-        </script>
-        
+
+        function showNotification(element, message, type = 'error') {
+            element.textContent = message;
+            element.className = `notification ${type}`;
+            element.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
 

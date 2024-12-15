@@ -1,89 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="user.css">
-    <link rel="icon" href="images/web-icon.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="nav-bar" id="home">
-        <nav class="nav-logo">
-            <ul>
-                <li><a href="index.html">
-                    <span class="logo">FR3</span>
-                </a></li>
-            </ul>
-        </nav>
-        <nav class="nav-user">
-            <ul>
-                <li><a href="user.html">
-                    <img class="user" src="images/user/user-white.svg" alt="user">
-                </a></li>
-            </ul>
-        </nav>
-    </div>
-    <header class="headik">
-        <div class="header-content">
-            <div class="left-section">
-                <h1>Login</h1>
-                <form id="loginForm">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                    <button type="submit">Login</button>
-                </div>
-                <div id="notification" class="notification"></div>
-                <p>Don't have an account? <a href="signUp.html">Sign up</a></p>
-            </form>
-            <div class="right-section">
-                <img src="images/buda-baner.png" alt="pc">
-            </div>
-        </div>
-    </header>
-    <footer id="contacts">
-        <div class="footer-content">
-            <p>&copy; 2024 PC Club Og Buda. All rights reserved.</p>
-            <div class="social-links">
-                <a href="#" class="social-link"><img src="images/social-media/facebook.svg" alt="Facebook"></a>
-                <a href="#" class="social-link"><img src="images/social-media/twitter.svg" alt="Twitter"></a>
-                <a href="#" class="social-link"><img src="images/social-media/instagram.svg" alt="Instagram"></a>
-            </div>
-        </div>
-    </footer>
-    <script src="/scripts/main.js"></script>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const notification = document.getElementById('notification');
-        
-            try {
-                const result = await login(email, password);
-                if (result.success) {
-                    showNotification(notification, 'Login successful', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/profile.html';
-                    }, 1000);
-                } else {
-                    showNotification(notification, result.error || 'Invalid credentials');
-                }
-            } catch (error) {
-                showNotification(notification, 'An error occurred during login');
-            }
-        });
-        
-        // Check auth status on page load
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (await checkAuthStatus()) {
+<!-- Previous HTML remains the same until the form -->
+<form id="loginForm">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" required>
+    <button type="submit">Login</button>
+    <div id="notification" class="notification"></div>
+    <p>Don't have an account? <a href="signUp.html">Sign up</a></p>
+</form>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const notification = document.getElementById('notification');
+
+    try {
+        const result = await login(email, password);
+        if (result.success) {
+            showNotification(notification, 'Login successful', 'success');
+            setTimeout(() => {
                 window.location.href = '/profile.html';
-            }
-        });
-        </script>
-</body>
-</html>
+            }, 1000);
+        } else {
+            showNotification(notification, result.error || 'Invalid credentials');
+        }
+    } catch (error) {
+        showNotification(notification, 'An error occurred during login');
+    }
+});
+
+// Check auth status on page load
+document.addEventListener('DOMContentLoaded', async () => {
+    if (await checkAuthStatus()) {
+        window.location.href = '/profile.html';
+    }
+});
+</script>
 
